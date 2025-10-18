@@ -1,0 +1,8 @@
+aiogram
+aiohttp
+python-dotenv
+playwright
+yt-dlp
+PySocks
+brotli
+aiosocksy
