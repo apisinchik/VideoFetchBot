@@ -1,4 +1,4 @@
-"""Network/proxy utilities."""
+"""Утилиты сети и прокси."""
 
 import asyncio
 import logging
@@ -14,7 +14,7 @@ class ProxyChecker:
         self.timeout = aiohttp.ClientTimeout(total=timeout_seconds)
 
     async def check_proxy(self, proxy_url: str) -> Tuple[bool, str]:
-        """Check whether the proxy works."""
+        """Проверяет работоспособность прокси."""
         proxy = (proxy_url or "").strip()
         if not proxy:
             return False, "Proxy URL is empty"
@@ -46,7 +46,7 @@ class ProxyChecker:
             return False, f"Proxy error: {e}"
 
     async def test_direct_connection(self) -> bool:
-        """Check a direct connection without proxy."""
+        """Проверяет прямое соединение без прокси."""
         try:
             connector = aiohttp.TCPConnector(ssl=False)
             async with aiohttp.ClientSession(connector=connector, timeout=self.timeout) as session:

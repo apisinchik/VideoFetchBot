@@ -1,4 +1,4 @@
-"""ASGI config for videofetch_site project."""
+"""Конфигурация ASGI для проекта videofetch_site."""
 
 import os
 import asyncio

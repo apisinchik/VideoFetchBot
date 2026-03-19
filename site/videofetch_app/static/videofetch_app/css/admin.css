@@ -1,0 +1,44 @@
+:root {
+    --primary: #4d79ff;
+    --secondary: #2f5dd8;
+    --accent: #c8daff;
+    --primary-fg: #ffffff;
+    --link-fg: #2f5dd8;
+    --button-bg: #2f5dd8;
+    --button-hover-bg: #244bb1;
+    --default-button-bg: #4d79ff;
+    --default-button-hover-bg: #3e66d6;
+}
+
+#header {
+    background: linear-gradient(135deg, #2f5dd8 0%, #4d79ff 100%);
+}
+
+#branding h1,
+#branding h1 a:link,
+#branding h1 a:visited {
+    color: #ffffff;
+}
+
+div.breadcrumbs {
+    background: #dbe6ff;
+    color: #274a9b;
+}
+
+div.breadcrumbs a {
+    color: #274a9b;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+    background: linear-gradient(135deg, #4d79ff 0%, #6a90ff 100%);
+}
+
+.button,
+input[type=submit],
+input[type=button],
+.submit-row input,
+a.button {
+    border-radius: 8px;
+}

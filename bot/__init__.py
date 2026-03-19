@@ -1,1 +1,1 @@
-"""Telegram bot package."""
+"""Пакет Telegram-бота."""

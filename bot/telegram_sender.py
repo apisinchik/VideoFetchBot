@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class FileTooLargeForTelegram(Exception):
-    """Raised when file size exceeds configured Telegram upload limit."""
+    """Выбрасывается, если размер файла превышает настроенный лимит загрузки Telegram."""
 
 
 @dataclass
@@ -29,7 +29,7 @@ class SendResult:
 
 
 class TelegramFileSender:
-    """Responsible for uploading files to Telegram with retries/backoff."""
+    """Отвечает за загрузку файлов в Telegram с повторами и нарастающей паузой."""
 
     def __init__(
         self,

@@ -33,7 +33,7 @@ class CachedDownload:
 
 
 class DownloadRegistry:
-    """In-memory registry for last downloaded file per user."""
+    """Реестр в памяти для последнего скачанного файла по пользователю."""
 
     def __init__(self, retention_seconds: int = 6 * 3600) -> None:
         self.retention_seconds = retention_seconds

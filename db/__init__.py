@@ -1,4 +1,4 @@
-"""Shared database layer used by the Telegram bot and a future web app."""
+"""Общий слой базы данных для Telegram-бота и веб-приложения."""
 
 from .postgres_db import create_pool, init_schema
 from .postgres_queue import (

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Django's command-line utility for administrative tasks."""
+"""Утилита командной строки Django для административных задач."""
 import os
 import pathlib
 import sys
@@ -10,7 +10,7 @@ if str(ROOT_DIR) not in sys.path:
 
 
 def main():
-    """Run administrative tasks."""
+    """Запускает административные задачи."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'videofetch_site.settings')
     try:
         from django.core.management import execute_from_command_line

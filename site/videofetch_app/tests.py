@@ -6,10 +6,15 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from asgiref.sync import async_to_sync
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.utils.datastructures import MultiValueDict
 from django.http import Http404
 from django.test import RequestFactory, SimpleTestCase, override_settings
 
+from bot.broadcast_media import build_broadcast_send_plan, classify_broadcast_attachment
+from bot.broadcast_manager import split_broadcast_text
+from videofetch_app.forms import BroadcastAdminForm
 from videofetcher.service import VideoService
 from videofetch_app.presentation import build_analysis_payload, build_visible_format_choices, serialize_job
 from videofetch_app.views import MainScreen, api_analyze, api_start_job, job_download
@@ -296,3 +301,65 @@ class VideoServiceExtractionFlowTests(SimpleTestCase):
 
         self.assertEqual(status_name, "youtube_auth_required")
         browser_mock.assert_not_awaited()
+
+
+class BroadcastHelpersTests(SimpleTestCase):
+    def test_split_broadcast_text_chunks_long_message(self):
+        text = ("alpha " * 900).strip()
+
+        chunks = split_broadcast_text(text, limit=512)
+
+        self.assertGreater(len(chunks), 1)
+        self.assertTrue(all(len(chunk) <= 512 for chunk in chunks))
+        self.assertEqual(" ".join(chunks).replace("  ", " "), text)
+
+    def test_broadcast_admin_form_uses_multi_file_widget(self):
+        form = BroadcastAdminForm()
+
+        self.assertIn("upload_files", form.fields)
+        self.assertTrue(form.fields["upload_files"].widget.allow_multiple_selected)
+
+    def test_broadcast_admin_form_accepts_multiple_files(self):
+        files = [
+            SimpleUploadedFile('a.txt', b'a', content_type='text/plain'),
+            SimpleUploadedFile('b.txt', b'b', content_type='text/plain'),
+        ]
+        form = BroadcastAdminForm(
+            data={'title': 'Promo', 'text': 'Body', 'recipient_mode': 'all_telegram'},
+            files=MultiValueDict({'upload_files': files}),
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(len(form.cleaned_data['upload_files']), 2)
+
+    def test_classify_broadcast_attachment_prefers_photo_and_video_media(self):
+        photo = SimpleNamespace(original_name='poster.jpg', content_type='image/jpeg')
+        video = SimpleNamespace(original_name='trailer.mp4', content_type='video/mp4')
+        doc = SimpleNamespace(original_name='price.pdf', content_type='application/pdf')
+
+        self.assertEqual(classify_broadcast_attachment(photo), 'photo')
+        self.assertEqual(classify_broadcast_attachment(video), 'video')
+        self.assertEqual(classify_broadcast_attachment(doc), 'document')
+
+    def test_build_broadcast_send_plan_uses_single_media_with_caption(self):
+        attachment = SimpleNamespace(original_name='poster.jpg', content_type='image/jpeg')
+
+        plan = build_broadcast_send_plan('Promo text', [attachment])
+
+        self.assertEqual(plan.mode, 'single_photo')
+        self.assertEqual(plan.caption, 'Promo text')
+
+    def test_build_broadcast_send_plan_rejects_mixed_document_and_media(self):
+        attachments = [
+            SimpleNamespace(original_name='poster.jpg', content_type='image/jpeg'),
+            SimpleNamespace(original_name='brief.pdf', content_type='application/pdf'),
+        ]
+
+        with self.assertRaises(ValueError):
+            build_broadcast_send_plan('Promo text', attachments)
+
+    def test_build_broadcast_send_plan_rejects_long_caption_for_media(self):
+        attachment = SimpleNamespace(original_name='poster.jpg', content_type='image/jpeg')
+
+        with self.assertRaises(ValueError):
+            build_broadcast_send_plan('x' * 1025, [attachment])

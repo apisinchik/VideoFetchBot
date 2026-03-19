@@ -3,15 +3,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+
 
 class Config:
-    """Project settings."""
+    """Настройки проекта."""
 
     BOT_TOKEN = os.getenv("BOT_TOKEN")
     if not BOT_TOKEN:
         raise RuntimeError("BOT_TOKEN is not set. Put it into .env")
 
     TEMP_DIR = os.getenv("TEMP_DIR", "temp")
+    MEDIA_ROOT = os.getenv("MEDIA_ROOT", os.path.join(PROJECT_ROOT, "media"))
 
     PROXY_URL = (
         os.getenv("VIDEOFETCHER_PROXY_URL")
@@ -70,3 +73,8 @@ class Config:
     QUEUE_REQUEUE_RUNNING_ON_STARTUP = os.getenv("QUEUE_REQUEUE_RUNNING_ON_STARTUP", "1") in ("1", "true", "True")
 
     WORKER_DOWNLOAD_TIMEOUT = int(os.getenv("WORKER_DOWNLOAD_TIMEOUT", str(100 * 60)))
+    BROADCAST_POLL_INTERVAL = float(os.getenv("BROADCAST_POLL_INTERVAL", "1.0"))
+    BROADCAST_MAX_RETRIES = int(os.getenv("BROADCAST_MAX_RETRIES", "5"))
+    BROADCAST_RETRY_DELAY_SECONDS = float(os.getenv("BROADCAST_RETRY_DELAY_SECONDS", "5"))
+    BROADCAST_STALE_RUNNING_SECONDS = int(os.getenv("BROADCAST_STALE_RUNNING_SECONDS", "300"))
+    BROADCAST_SEND_DELAY_SECONDS = float(os.getenv("BROADCAST_SEND_DELAY_SECONDS", "0.15"))

@@ -17,7 +17,7 @@ class VideoService(
     VideoServiceExtractionMixin,
     VideoServicePlaywrightMixin,
 ):
-    """Facade class that composes extraction, download and browser helpers."""
+    """Фасад, объединяющий извлечение, скачивание и браузерные помощники."""
 
     def __init__(self, settings: Optional[VideoFetcherSettings] = None):
         self.settings = settings or VideoFetcherSettings()

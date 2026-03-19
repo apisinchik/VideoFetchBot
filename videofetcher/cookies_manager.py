@@ -149,9 +149,9 @@ class CookiesManager:
         return await self.save_cookies_to_file(cookies, file_path)
 
     async def fetch_django_cookies(self) -> List[Dict]:
-        """Deprecated: use fetch_cookies()."""
+        """Устарело: используйте fetch_cookies()."""
         return await self.fetch_cookies()
 
     async def fetch_and_save_django_cookies(self, file_path: str) -> bool:
-        """Deprecated: use fetch_and_save_cookies()."""
+        """Устарело: используйте fetch_and_save_cookies()."""
         return await self.fetch_and_save_cookies(file_path)
