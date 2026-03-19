@@ -1,4 +1,3 @@
-# proxy_checker.py
 import asyncio
 import aiohttp
 import logging
@@ -16,7 +15,6 @@ class ProxyChecker:
         try:
             connector = aiohttp.TCPConnector(ssl=False)
             async with aiohttp.ClientSession(connector=connector, timeout=self.timeout) as session:
-                # Пробуем подключиться к YouTube через прокси
                 async with session.get('https://www.youtube.com/', proxy=proxy_url, ssl=False) as response:
                     if response.status == 200:
                         return True, "Proxy is working"

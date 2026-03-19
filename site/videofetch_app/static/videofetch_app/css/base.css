@@ -1,0 +1,35 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: radial-gradient(
+    circle 700px at 50% 10%,
+    var(--bg1) 0%,
+    var(--bg2) 100%
+  );
+  background-repeat: no-repeat;
+  min-height: 100vh;
+}
+
+p.freelance {
+  grid-row-start: 1;
+  grid-row-end: 3;
+  cursor: default;
+}
+
+p.freelance, a {
+  color: var(--ftcolor);
+  font-weight: bold;
+  font-family: 'Open Sans', sans-serif;
+  text-decoration: none;
+}
+
+a {
+  cursor: pointer;
+}
+
+a:hover {
+  text-decoration: underline;
+}

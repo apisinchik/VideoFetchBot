@@ -3,6 +3,16 @@ aiohttp
 python-dotenv
 playwright
 yt-dlp
+m3u8
+secretstorage
 PySocks
 brotli
-aiosocksy
+aiohttp-socks>=0.8.4
+setuptools>=68
+Django
+bs4
+asyncpg
+django
+django-environ
+djangorestframework
+docutils

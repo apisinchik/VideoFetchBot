@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "videofetcher"
+version = "0.1.0"
+description = "Reusable video extraction/downloading module used by VideoFetchBot"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "aiohttp",
+    "m3u8",
+    "yt-dlp",
+    "secretstorage",
+]
+
+[project.optional-dependencies]
+playwright = ["playwright"]
+
+[tool.setuptools]
+packages = ["videofetcher"]

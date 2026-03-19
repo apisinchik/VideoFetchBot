@@ -1,0 +1,56 @@
+{% for message in chat %}
+<section class="chat-entry" data-job-id="{{ message.id }}" {% if message.can_poll %}data-poll-job="1"{% endif %}>
+  <article class="chat-message chat-message--assistant">
+    <div class="chat-bubble chat-bubble--assistant js-job-card" data-job-id="{{ message.id }}">
+      <div class="chat-card__header">
+        <span class="chat-chip chat-chip--{{ message.status }}">{{ message.status_label }}</span>
+        {% if message.duration_text != 'Неизвестно' %}
+        <span class="chat-card__duration">{{ message.duration_text }}</span>
+        {% endif %}
+      </div>
+
+      <h2 class="chat-card__title">{{ message.title }}</h2>
+
+      <dl class="chat-card__facts">
+        <div>
+          <dt>Формат</dt>
+          <dd>{{ message.quality }}</dd>
+        </div>
+        {% if message.audio_name %}
+        <div>
+          <dt>Озвучка</dt>
+          <dd>{{ message.audio_name }}</dd>
+        </div>
+        {% endif %}
+        <div>
+          <dt>Стадия</dt>
+          <dd class="js-stage-label">{{ message.stage_label }}</dd>
+        </div>
+      </dl>
+
+      {% if message.status == 'failed' and message.error_message %}
+      <div class="chat-card__error">{{ message.error_message }}</div>
+      {% endif %}
+
+      <div class="job-progress{% if not message.can_poll and message.progress <= 0 %} is-hidden{% endif %}">
+        <div class="job-progress__track">
+          <div class="job-progress__bar js-progress-bar" style="width: {{ message.progress }}%"></div>
+        </div>
+        <div class="job-progress__meta">
+          <span class="js-progress-value">{{ message.progress }}%</span>
+        </div>
+      </div>
+
+      <div class="chat-card__actions">
+        {% if message.download_ready %}
+        <a class="chat-action chat-action--primary" href="{{ message.download_url }}">Скачать файл</a>
+        {% elif message.status == 'failed' %}
+        <button type="button" class="chat-action chat-action--muted" disabled>Не удалось скачать</button>
+        {% else %}
+        <button type="button" class="chat-action chat-action--muted" disabled>Файл еще готовится</button>
+        {% endif %}
+      </div>
+    </div>
+  </article>
+</section>
+{% endfor %}

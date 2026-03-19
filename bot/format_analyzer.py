@@ -1,4 +1,3 @@
-# format_analyzer.py
 import json
 import yt_dlp
 import logging
@@ -19,11 +18,9 @@ def analyze_video_formats(url: str) -> Tuple[Dict, List[Dict]]:
         info = ydl.extract_info(url, download=False)
         sanitized_info = ydl.sanitize_info(info)
 
-        # Логируем всю информацию для отладки
         logger.debug("Available formats analysis:")
         for fmt in info.get('formats', []):
-            logger.debug(f"Format: {fmt.get('format_id')} - "
-                         f"vcodec: {fmt.get('vcodec')}, "
+            logger.debug(f"Format: {fmt.get('format_id')} - "f"vcodec: {fmt.get('vcodec')}, "
                          f"acodec: {fmt.get('acodec')}, "
                          f"height: {fmt.get('height')}, "
                          f"filesize: {fmt.get('filesize')}")

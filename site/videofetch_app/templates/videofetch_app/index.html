@@ -1,0 +1,102 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VideoFetch</title>
+    <link href="{% static 'videofetch_app/css/tokens.css' %}" rel="stylesheet">
+    <link href="{% static 'videofetch_app/css/base.css' %}" rel="stylesheet">
+    <link href="{% static 'videofetch_app/css/components/topbar.css' %}" rel="stylesheet">
+    <link href="{% static 'videofetch_app/css/components/profile.css' %}" rel="stylesheet">
+    <link href="{% static 'videofetch_app/css/components/url-sender.css' %}" rel="stylesheet">
+    <link href="{% static 'videofetch_app/css/components/chat.css' %}" rel="stylesheet">
+    <link href="{% static 'videofetch_app/css/components/footer.css' %}" rel="stylesheet">
+    <link href="{% static 'videofetch_app/css/pages/index.css' %}" rel="stylesheet">
+    <link href="{% static 'videofetch_app/imgs/icon.png' %}" rel="icon">
+    <script src="{% static 'videofetch_app/js/profile.js' %}" defer></script>
+    <script src="{% static 'videofetch_app/js/chat.js' %}" defer></script>
+  </head>
+  <body>
+    <header>
+      <div class="topbar">
+        <nav class="topbar__nav" aria-label="Быстрые ссылки">
+          <a
+            class="topbar__link"
+            href="https://t.me/your_bot_username"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Попробовать telegram бот
+          </a>
+        </nav>
+      </div>
+      <button class="profile" type="button" aria-label="Профиль">
+        <img class="profile" src="{% static 'videofetch_app/imgs/profile.svg' %}" alt="Профиль">
+      </button>
+    </header>
+
+    <main
+      id="chat-app"
+      class="page {% if has_chat %}page--chat{% endif %}"
+      data-analyze-url="{% url 'api_analyze' %}"
+      data-start-url="{% url 'api_start_job' %}"
+      data-job-status-url-template="{% url 'api_job_status' 999999 %}"
+    >
+      <section class="composer-stack">
+        <section class="composer-shell {% if has_chat %}composer-shell--chat{% endif %}">
+          <form id="js-analyze-form" class="url-form" action="" method="post" novalidate>
+            {% csrf_token %}
+            {{ form }}
+            <button class="send-url" type="submit">Скачать</button>
+          </form>
+        </section>
+        <div id="chat-error" class="error {% if has_chat %}error-chat{% endif %}" hidden></div>
+      </section>
+
+      <section id="chat-stream" class="chat-stream {% if not has_chat %}chat-stream--empty{% endif %}">
+        {% include 'videofetch_app/chat.html' with chat=chat %}
+      </section>
+    </main>
+
+    <footer>
+      <section class="info" aria-label="Контакты разработчика">
+        <p class="info__title">Разработчик проекта</p>
+        <nav class="info__links" aria-label="Внешние ссылки">
+          <a
+            class="info__link info__link--accent"
+            href="https://t.me/sergey_admin_criptobox"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Telegram
+          </a>
+          <a
+            class="info__link"
+            href="https://www.fl.ru/users/m_sergey85/portfolio/"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Портфолио
+          </a>
+          <a
+            class="info__link"
+            href="https://example.com"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Сайт
+          </a>
+          <a
+            class="info__link info__link--ghost"
+            href="https://kwork.ru/user/spilidililtlililil"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Kwork
+          </a>
+        </nav>
+      </section>
+    </footer>
+  </body>
+</html>

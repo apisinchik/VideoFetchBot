@@ -1,0 +1,20 @@
+:root {
+  --bg1: #87c9fd;
+  --bgm: #5ea7f6;
+  --bg2: #247fec;
+  --tb1: #8fcbfd;
+  --tb2: rgba(255, 255, 255, 0);
+  --url-card: #ffffff;
+  --err-bg: #ff9495;
+  --input-text: #000000;
+  --input-bg: #eef4fc;
+  --ph-color: #b4c0d4;
+
+  --wbg: #ffffff;
+  --focus-border:  #b1bed5;
+  --btn-color: #0d6dfa;
+  --btn-text-col: #ffffff;
+
+  --fbg: rgba(178, 211, 252, 0.7);
+  --ftcolor: #1d4473;
+}

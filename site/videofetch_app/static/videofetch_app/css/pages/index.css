@@ -1,0 +1,25 @@
+@media screen and (width <= 905px) {
+  
+  section.url-sender, section.url-sender-chat {
+    height: 160px;
+  }
+
+  form.url-form {
+    flex-direction: column;
+    height: 130px;
+  }
+
+  button.profile {
+    right: 20px;
+  }
+
+  input.input-url {
+    height: auto;
+    margin-bottom: 10px;
+  }
+
+  button.send-url {
+    height: auto;
+    margin-left: 0;
+  }
+}
