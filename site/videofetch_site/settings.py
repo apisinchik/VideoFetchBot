@@ -13,7 +13,9 @@ import environ
 
 
 
-SECRET_KEY = 'django-insecure-$!l2$92z!y=a9cno)xid)3ok(_6x!+&i4ef@whaq^$zbu_+ulz'
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("DJANGO_SECRET_KEY is not set")
 
 DEBUG = os.getenv("DJANGO_DEBUG", "1") in ("1", "true", "True")
 
