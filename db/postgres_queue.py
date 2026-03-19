@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def _ensure_json_obj(v: Any) -> Any:
-    """Make JSONB fields robust."""
+    """Нормализует поля JSONB."""
     if v is None:
         return None
     if isinstance(v, (dict, list)):
@@ -104,7 +104,7 @@ async def upsert_telegram_user(
     last_name: Optional[str],
     language_code: Optional[str],
 ) -> int:
-    """Create or update canonical user + telegram identity."""
+    """Создает или обновляет основного пользователя и Telegram-идентичность."""
     async with pool.acquire() as conn:
         async with conn.transaction():
             row = await conn.fetchrow(
@@ -314,7 +314,7 @@ async def enqueue_job_guarded(
 
 
 async def get_queue_position(pool: asyncpg.Pool, *, job_id: int) -> Optional[int]:
-    """Return 1-based position among queued jobs of same lane."""
+    """Возвращает позицию в очереди с 1 среди queued-задач той же полосы."""
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
     """
@@ -346,7 +346,7 @@ async def count_running(pool: asyncpg.Pool, *, is_short: bool) -> int:
 
 
 async def requeue_running_jobs(pool: asyncpg.Pool) -> int:
-    """Move all running jobs back to queued (used on bot restart)."""
+    """Возвращает все running-задачи в queued при перезапуске бота."""
     async with pool.acquire() as conn:
         rows = await conn.fetch(
     """
@@ -365,7 +365,7 @@ async def requeue_running_jobs(pool: asyncpg.Pool) -> int:
 
 
 async def claim_next(pool: asyncpg.Pool, *, is_short: bool, worker_id: str) -> Optional[QueueJob]:
-    """Atomically claim the next queued job in a given lane."""
+    """Атомарно забирает следующую queued-задачу в указанной полосе."""
     async with pool.acquire() as conn:
         async with conn.transaction():
             row = await conn.fetchrow(
@@ -438,7 +438,7 @@ async def mark_failed(pool: asyncpg.Pool, *, job_id: int, error_message: str, er
 
 
 async def cancel_latest_queued(pool: asyncpg.Pool, *, user_id: int) -> Optional[int]:
-    """Cancel latest queued job for a user. Returns job id or None."""
+    """Отменяет последнюю queued-задачу пользователя. Возвращает id задачи или None."""
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
     """
@@ -481,6 +481,11 @@ async def start_slots(pool: asyncpg.Pool, slots: int) -> None:
         await conn.execute('''INSERT INTO analysis_slots(holder, lease_until)
                      SELECT \'free\', NULL
                      FROM generate_series(1, $1);''', slots)
+
+
+async def clear_slots(pool: asyncpg.Pool) -> None:
+    async with pool.acquire() as conn:
+        await conn.execute("DELETE FROM analysis_slots")
         
 
 async def select_and_hold(pool: asyncpg.Pool, timeout: int) -> Optional[int]:

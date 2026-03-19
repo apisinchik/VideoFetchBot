@@ -1,4 +1,4 @@
-"""Django settings."""
+"""Настройки Django."""
 
 import os
 from pathlib import Path
@@ -134,6 +134,8 @@ USE_TZ = True
 
 
 STATIC_URL = 'static/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = Config.MEDIA_ROOT
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [

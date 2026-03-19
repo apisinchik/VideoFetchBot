@@ -15,6 +15,49 @@ CREATE TABLE IF NOT EXISTS telegram_users (
     last_seen_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS broadcasts (
+    id               BIGSERIAL PRIMARY KEY,
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_by_id    INTEGER REFERENCES auth_user(id) ON DELETE SET NULL,
+    title            TEXT NOT NULL DEFAULT '',
+    text             TEXT NOT NULL DEFAULT '',
+    recipient_mode   TEXT NOT NULL CHECK (recipient_mode IN ('all_telegram','marketing_opt_in')) DEFAULT 'all_telegram',
+    status           TEXT NOT NULL CHECK (status IN ('draft','queued','running','completed','failed','canceled')) DEFAULT 'draft',
+    total_recipients INTEGER NOT NULL DEFAULT 0,
+    sent_count       INTEGER NOT NULL DEFAULT 0,
+    failed_count     INTEGER NOT NULL DEFAULT 0,
+    started_at       TIMESTAMPTZ,
+    finished_at      TIMESTAMPTZ,
+    last_error       TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS broadcast_attachments (
+    id            BIGSERIAL PRIMARY KEY,
+    broadcast_id  BIGINT NOT NULL REFERENCES broadcasts(id) ON DELETE CASCADE,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    file          TEXT NOT NULL,
+    original_name TEXT NOT NULL DEFAULT '',
+    content_type  TEXT NOT NULL DEFAULT '',
+    size_bytes    BIGINT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS broadcast_deliveries (
+    id                 BIGSERIAL PRIMARY KEY,
+    broadcast_id       BIGINT NOT NULL REFERENCES broadcasts(id) ON DELETE CASCADE,
+    recipient_user_id  BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    telegram_user_id   BIGINT NOT NULL,
+    chat_id            BIGINT NOT NULL,
+    status             TEXT NOT NULL CHECK (status IN ('pending','running','sent','failed')) DEFAULT 'pending',
+    attempts           INTEGER NOT NULL DEFAULT 0,
+    run_after          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    locked_by          TEXT,
+    locked_at          TIMESTAMPTZ,
+    sent_at            TIMESTAMPTZ,
+    last_error         TEXT NOT NULL DEFAULT '',
+    CONSTRAINT broadcast_delivery_unique_recipient UNIQUE (broadcast_id, recipient_user_id)
+);
+
 CREATE TABLE IF NOT EXISTS web_accounts (
     user_id        BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     email          TEXT UNIQUE,
@@ -86,6 +129,15 @@ CREATE INDEX IF NOT EXISTS idx_download_jobs_queue
 CREATE INDEX IF NOT EXISTS idx_download_jobs_run_after
     ON download_jobs(run_after);
 
+CREATE INDEX IF NOT EXISTS idx_broadcasts_status_created_at
+    ON broadcasts(status, created_at);
+
+CREATE INDEX IF NOT EXISTS idx_broadcast_deliveries_queue
+    ON broadcast_deliveries(status, run_after, id);
+
+CREATE INDEX IF NOT EXISTS idx_broadcast_deliveries_broadcast_id
+    ON broadcast_deliveries(broadcast_id);
+
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -97,4 +149,9 @@ $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trg_download_jobs_updated_at ON download_jobs;
 CREATE TRIGGER trg_download_jobs_updated_at
 BEFORE UPDATE ON download_jobs
+FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_broadcasts_updated_at ON broadcasts;
+CREATE TRIGGER trg_broadcasts_updated_at
+BEFORE UPDATE ON broadcasts
 FOR EACH ROW EXECUTE PROCEDURE set_updated_at();

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 async def _init_connection(conn: asyncpg.Connection) -> None:
-    """Configure connection type codecs."""
+    """Настраивает кодеки типов соединения."""
     await conn.set_type_codec(
         "json",
         encoder=json.dumps,
@@ -29,12 +29,12 @@ async def _init_connection(conn: asyncpg.Connection) -> None:
 
 
 async def create_pool(dsn: str, *, min_size: int = 1, max_size: int = 5) -> asyncpg.Pool:
-    """Create an asyncpg pool (with JSON/JSONB codecs)."""
+    """Создает пул asyncpg с кодеками JSON и JSONB."""
     return await asyncpg.create_pool(dsn=dsn, min_size=min_size, max_size=max_size, init=_init_connection)
 
 
 async def init_schema(pool: asyncpg.Pool, schema_path: str | pathlib.Path) -> None:
-    """Apply schema.sql idempotently."""
+    """Идемпотентно применяет schema.sql."""
     path = pathlib.Path(schema_path)
     sql = path.read_text(encoding="utf-8")
     async with pool.acquire() as conn:

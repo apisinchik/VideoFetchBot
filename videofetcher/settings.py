@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 @dataclass(slots=True)
 class VideoFetcherSettings:
-    """Configuration for :class:`videofetcher.service.VideoService`."""
+    """Конфигурация для :class:`videofetcher.service.VideoService`."""
 
     temp_dir: str = os.getenv("VIDEOFETCHER_TEMP_DIR", "temp")
 

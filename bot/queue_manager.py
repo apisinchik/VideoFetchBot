@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 class QueueManager:
-    """Background workers consuming jobs from PostgreSQL queue."""
+    """Фоновые воркеры, обрабатывающие задачи из очереди PostgreSQL."""
 
     def __init__(self, *, bot: Bot, db_pool, video_service, telegram_sender, download_registry) -> None:
         self.bot = bot
@@ -85,7 +85,7 @@ class QueueManager:
                 await asyncio.sleep(1.0)
 
     async def cancel_job(self, job_id: int, reason: str = "canceled by user") -> bool:
-        """Cancel a running job if possible. Returns True if a running task was signaled."""
+        """Отменяет выполняемую задачу. Возвращает True, если сигнал отмены отправлен."""
         task = self._job_tasks.get(job_id)
         if task and not task.done():
             task.cancel()

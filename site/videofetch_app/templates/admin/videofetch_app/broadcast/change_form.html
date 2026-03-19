@@ -1,0 +1,11 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block submit_buttons_bottom %}
+  {{ block.super }}
+  {% if can_queue_broadcast %}
+    <div class="submit-row">
+      <input type="submit" value="Сохранить и отправить" name="_queuebroadcast">
+    </div>
+  {% endif %}
+{% endblock %}

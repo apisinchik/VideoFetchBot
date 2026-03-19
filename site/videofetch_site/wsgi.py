@@ -1,4 +1,4 @@
-"""WSGI config for videofetch_site project."""
+"""Конфигурация WSGI для проекта videofetch_site."""
 
 import os
 import pathlib

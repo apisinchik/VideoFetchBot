@@ -88,7 +88,7 @@ class VideoServiceExtractionMixin:
         return browser_name, profile, keyring, container
 
     def _apply_ytdlp_cookie_source(self, opts: Dict) -> None:
-        """Attach the preferred cookie source to yt-dlp options."""
+        """Подключает предпочитаемый источник cookie к опциям yt-dlp."""
         if self._ytdlp_cookies_from_browser:
             opts["cookiesfrombrowser"] = self._ytdlp_cookies_from_browser
             return
@@ -238,7 +238,7 @@ class VideoServiceExtractionMixin:
             return False
 
     def _is_youtube_auth_error(self, err: str) -> bool:
-        """Detect common yt-dlp YouTube auth / anti-bot messages."""
+        """Определяет типичные сообщения yt-dlp об авторизации YouTube и антибот-защите."""
         s = (err or "").lower()
         s = s.replace("’", "'")
         return (
@@ -257,7 +257,7 @@ class VideoServiceExtractionMixin:
 
 
     def _is_forbidden_fragment_error(self, err: str) -> bool:
-        """Detect 403/empty-file fragment failures (common for HLS)."""
+        """Определяет ошибки фрагментов 403 и пустых файлов, типичные для HLS."""
         s = (err or "").lower()
         return (
             ("http error 403" in s and "forbidden" in s)
@@ -266,7 +266,7 @@ class VideoServiceExtractionMixin:
         )
 
     def _apply_referer_headers(self, opts: dict, referer: str | None) -> None:
-        """Make sure Referer/Origin are present in yt-dlp http_headers."""
+        """Гарантирует наличие Referer и Origin в http_headers для yt-dlp."""
         if not referer:
             return
         try:
@@ -282,7 +282,7 @@ class VideoServiceExtractionMixin:
             pass
 
     async def _wait_for_cookiefile_update(self) -> bool:
-        """Optionally wait for external cookiefile refresh and return True if updated."""
+        """При необходимости ждет внешнее обновление cookie-файла и возвращает True при изменении."""
         wait_s = int(getattr(self.settings, "ytdlp_wait_cookie_update_seconds", 0) or 0)
         if wait_s <= 0 or not self._ytdlp_cookies_file:
             return False
@@ -312,11 +312,11 @@ class VideoServiceExtractionMixin:
         return False
 
     async def extract_video_info(self, url: str) -> Tuple[Optional[Dict], Optional[List], str]:
-        """Extract metadata and available formats."""
+        """Извлекает метаданные и доступные форматы."""
         return await self._extract_video_info_once(url, use_proxy=self.use_proxy)
 
     async def _extract_video_info_once(self, url: str, use_proxy: bool) -> Tuple[Optional[Dict], Optional[List], str]:
-        """Extract metadata and formats with an explicit proxy choice."""
+        """Извлекает метаданные и форматы с явным выбором прокси."""
 
         if self._is_initem_embed_url(url):
             logger.info("Embed URL detected, trying mk-player parser first")
@@ -345,7 +345,7 @@ class VideoServiceExtractionMixin:
         return info, formats, status
 
     def _is_initem_embed_url(self, url: str) -> bool:
-        """Returns True if the URL *looks like* an embed page."""
+        """Возвращает True, если URL похож на embed-страницу."""
         try:
             if not url:
                 return False
@@ -1169,7 +1169,7 @@ class VideoServiceExtractionMixin:
         return None, None, "video_info_error"
 
     def _process_formats_ytdlp(self, formats: List[Dict], url: str, duration: int) -> List[Dict]:
-        """Convert raw yt-dlp formats into a UI-friendly format list."""
+        """Преобразует сырые форматы yt-dlp в список, удобный для интерфейса."""
         muxed_formats: List[Dict] = []
         direct_video_only_formats: List[Dict] = []
         hls_video_only_formats: List[Dict] = []

@@ -1,4 +1,4 @@
-"""Compatibility shim."""
+"""Совместимый слой."""
 
 from videofetcher.service import HLSVideoDownloader, VideoService
 

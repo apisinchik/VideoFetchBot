@@ -54,7 +54,7 @@ class HLSVideoDownloader:
         headers: Dict[str, str],
         byte_range: str | None = None,
     ) -> str:
-        """Build a curl command for manual segment testing."""
+        """Собирает команду curl для ручной проверки сегмента."""
         parts = ["curl", "-v", f"--max-time", str(self.segment_timeout_s)]
 
         proxy = (self.proxy_url or '').strip()

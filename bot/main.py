@@ -21,19 +21,20 @@ from bot.telegram_sender import TelegramFileSender
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.telegram import TelegramAPIServer
 from db.postgres_db import create_pool, init_schema
-from db.postgres_queue import requeue_running_jobs, start_slots
+from db.postgres_queue import clear_slots, requeue_running_jobs, start_slots
 from bot.queue_manager import QueueManager
+from bot.broadcast_manager import BroadcastManager
 
 
 class CustomAiohttpSession(AiohttpSession):
-    """Aiohttp session with extended timeouts."""
+    """Сессия aiohttp с увеличенными таймаутами."""
 
     def __init__(self, api: TelegramAPIServer = None, timeout: int = 3600):
         self.timeout = aiohttp.ClientTimeout(total=timeout, connect=60, sock_connect=60, sock_read=timeout)
         super().__init__(api=api)
 
     def make_session(self) -> aiohttp.ClientSession:
-        """Build aiohttp client session."""
+        """Создает клиентскую сессию aiohttp."""
         return aiohttp.ClientSession(
             timeout=self.timeout,
             connector=self.connector
@@ -49,6 +50,14 @@ async def main():
     logger = logging.getLogger(__name__)
 
     os.makedirs(Config.TEMP_DIR, exist_ok=True)
+    os.makedirs(Config.MEDIA_ROOT, exist_ok=True)
+
+    cleanup_task = None
+    db_pool = None
+    video_service = None
+    queue_manager = None
+    broadcast_manager = None
+    bot = None
 
     api = TelegramAPIServer.from_base(
         Config.TELEGRAM_API_BASE_URL,
@@ -104,6 +113,7 @@ async def main():
 
     bot.video_service = video_service
 
+    await clear_slots(db_pool)
     await start_slots(db_pool, getattr(Config, "MAX_CONCURRENT_ANALYSIS", 2))
 
     queue_manager = QueueManager(
@@ -116,6 +126,13 @@ async def main():
     queue_manager.start()
     bot.queue_manager = queue_manager
 
+    broadcast_manager = BroadcastManager(
+        bot=bot,
+        db_pool=db_pool,
+    )
+    broadcast_manager.start()
+    bot.broadcast_manager = broadcast_manager
+
     dp.include_router(router)
 
     try:
@@ -124,17 +141,38 @@ async def main():
     except Exception as e:
         logger.error(f"Bot error: {str(e)}")
     finally:
-        cleanup_task.cancel()
+        if cleanup_task:
+            cleanup_task.cancel()
         try:
-            await queue_manager.stop()
+            if broadcast_manager:
+                await broadcast_manager.stop()
         except Exception:
             pass
-        await video_service.close()
         try:
-            await db_pool.close()
+            if queue_manager:
+                await queue_manager.stop()
         except Exception:
             pass
-        await bot.session.close()
+        try:
+            if video_service:
+                await video_service.close()
+        except Exception:
+            pass
+        try:
+            if db_pool:
+                await clear_slots(db_pool)
+        except Exception:
+            pass
+        try:
+            if db_pool:
+                await db_pool.close()
+        except Exception:
+            pass
+        try:
+            if bot:
+                await bot.session.close()
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
