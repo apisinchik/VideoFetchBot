@@ -10,9 +10,14 @@ brotli
 aiohttp-socks>=0.8.4
 setuptools>=68
 Django
+psycopg[binary]
 bs4
 asyncpg
 django
 django-environ
 djangorestframework
 docutils
+uvicorn
+gunicorn
+uvicorn-worker
+bgutil-ytdlp-pot-provider

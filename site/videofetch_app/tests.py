@@ -1,20 +1,32 @@
 from __future__ import annotations
 
 import json
+import os
+import tempfile
+import time
+from datetime import timedelta
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from asgiref.sync import async_to_sync
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.utils.datastructures import MultiValueDict
+from django.utils import timezone
 from django.http import Http404
 from django.test import RequestFactory, SimpleTestCase, override_settings
 
 from bot.broadcast_media import build_broadcast_send_plan, classify_broadcast_attachment
 from bot.broadcast_manager import split_broadcast_text
 from videofetch_app.forms import BroadcastAdminForm
+from videofetch_app.cleanup import (
+    build_managed_roots,
+    build_reclaim_candidates,
+    resolve_managed_result_path,
+    resolve_storage_relative_path,
+)
+from videofetch_app.management.commands.cleanup_web_jobs import Command as CleanupJobsCommand
 from videofetcher.service import VideoService
 from videofetch_app.presentation import build_analysis_payload, build_visible_format_choices, serialize_job
 from videofetch_app.views import MainScreen, api_analyze, api_start_job, job_download
@@ -243,6 +255,22 @@ class SiteFlowTests(SimpleTestCase):
 
 
 class VideoServiceExtractionFlowTests(SimpleTestCase):
+    def test_extractor_args_are_applied_from_env(self):
+        service = VideoService()
+        opts = {}
+
+        with patch.dict(
+            "os.environ",
+            {"VIDEOFETCHER_YTDLP_EXTRACTOR_ARGS": "youtubepot-bgutilhttp:base_url=http://plugin:4416"},
+            clear=False,
+        ):
+            service._apply_ytdlp_js_challenge_opts(opts)
+
+        self.assertEqual(
+            opts["extractor_args"],
+            {"youtubepot-bgutilhttp": {"base_url": ["http://plugin:4416"]}},
+        )
+
     def test_cookie_refresh_skipped_for_non_youtube_url(self):
         service = VideoService()
         service._ytdlp_auto_refresh_cookies = True
@@ -363,3 +391,107 @@ class BroadcastHelpersTests(SimpleTestCase):
 
         with self.assertRaises(ValueError):
             build_broadcast_send_plan('x' * 1025, [attachment])
+
+
+class CleanupHelpersTests(SimpleTestCase):
+    def test_resolve_managed_result_path_allows_project_relative_temp_file(self):
+        project_root = Path("/repo")
+        roots = build_managed_roots(project_root=project_root, temp_dir="temp", media_root="/repo/media")
+
+        resolved = resolve_managed_result_path(
+            "temp/42_result.mp4",
+            project_root=project_root,
+            managed_roots=roots,
+        )
+
+        self.assertEqual(resolved, Path("/repo/temp/42_result.mp4"))
+
+    def test_resolve_managed_result_path_rejects_outside_managed_roots(self):
+        project_root = Path("/repo")
+        roots = build_managed_roots(project_root=project_root, temp_dir="temp", media_root="/repo/media")
+
+        resolved = resolve_managed_result_path(
+            "/etc/passwd",
+            project_root=project_root,
+            managed_roots=roots,
+        )
+
+        self.assertIsNone(resolved)
+
+    def test_resolve_storage_relative_path_uses_media_root_for_relative_files(self):
+        storage_root = Path("/repo/media")
+
+        resolved = resolve_storage_relative_path(
+            "broadcasts/2026/03/promo.jpg",
+            storage_root=storage_root,
+        )
+
+        self.assertEqual(resolved, Path("/repo/media/broadcasts/2026/03/promo.jpg"))
+
+    def test_build_reclaim_candidates_skips_cookies_and_young_files(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            old_file = root / "old.mp4"
+            old_file.write_bytes(b"video")
+            old_ts = time.time() - 3600
+            os.utime(old_file, (old_ts, old_ts))
+
+            cookie_file = root / "ytdlp_cookies.txt"
+            cookie_file.write_text("cookie", encoding="utf-8")
+            os.utime(cookie_file, (old_ts, old_ts))
+
+            young_file = root / "young.mp4"
+            young_file.write_bytes(b"video")
+
+            candidates = build_reclaim_candidates(
+                [old_file, cookie_file, young_file],
+                now_ts=time.time(),
+                min_age_seconds=1800,
+            )
+
+        self.assertEqual([candidate.path.name for candidate in candidates], ["old.mp4"])
+
+    def test_cleanup_completed_broadcast_attachments_deletes_old_completed_files(self):
+        command = CleanupJobsCommand()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            media_root = project_root / "media"
+            old_file = media_root / "broadcasts/2026/03/old.jpg"
+            old_file.parent.mkdir(parents=True, exist_ok=True)
+            old_file.write_bytes(b"old-broadcast")
+
+            old_broadcast = SimpleNamespace(
+                attachments=SimpleNamespace(
+                    all=lambda: [
+                        SimpleNamespace(id=1, file="broadcasts/2026/03/old.jpg"),
+                    ]
+                )
+            )
+
+            queryset = MagicMock()
+            queryset.prefetch_related.return_value.order_by.return_value = [old_broadcast]
+            now = timezone.now()
+            with (
+                patch("videofetch_app.management.commands.cleanup_web_jobs.Broadcast.objects.filter", return_value=queryset) as broadcast_filter_mock,
+                patch("videofetch_app.management.commands.cleanup_web_jobs.BroadcastAttachment.objects.filter") as attachment_filter_mock,
+                patch("videofetch_app.management.commands.cleanup_web_jobs.settings.MEDIA_ROOT", str(media_root)),
+            ):
+                cleaned_count, deleted_files, reclaimed_bytes = command._cleanup_completed_broadcast_attachments(
+                    now=now,
+                    project_root=project_root,
+                    max_age_hours=1,
+                    dry_run=False,
+                )
+
+            self.assertEqual(cleaned_count, 1)
+            self.assertEqual(deleted_files, 1)
+            self.assertEqual(reclaimed_bytes, len(b"old-broadcast"))
+            self.assertFalse(old_file.exists())
+            broadcast_filter_mock.assert_called_once_with(
+                status="completed",
+                finished_at__isnull=False,
+                finished_at__lte=now - timedelta(hours=1),
+            )
+            attachment_filter_mock.assert_called_once_with(id__in=[1])
+            attachment_filter_mock.return_value.update.assert_called_once_with(file="")

@@ -1,0 +1,35 @@
+FROM python:3.12-slim AS pybase
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    nodejs \
+    npm \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m playwright install --with-deps chromium
+
+COPY . .
+
+
+FROM pybase AS bot
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+CMD ["python", "-m", "bot.main"]
+
+
+FROM pybase AS vfsite
+
+RUN chmod +x /app/docker/bootstrap-db.sh /app/docker/cleanup-loop.sh
+
+CMD ["sh", "-c", "python site/manage.py collectstatic --noinput && exec gunicorn --chdir site --bind 0.0.0.0:8000 --workers ${GUNICORN_WORKERS:-2} -k uvicorn_worker.UvicornWorker videofetch_site.asgi:application"]

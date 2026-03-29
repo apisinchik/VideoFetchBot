@@ -18,8 +18,9 @@
 /temp_segments/
 /downloads/
 /media/
-/chrome_profile/
+/cookies_profile/
 /chrome_bin/
+/data/
 /storage_state.json
 /test.py
 /test_1.py
@@ -28,18 +29,19 @@
 /temp/ytdlp_cookies.txt
 /site/temp/ytdlp_cookies.txt
 /bot/temp/ytdlp_cookies.txt
-/chrome_profile/storage_state.json
-/chrome_profile/Singleton*
-/chrome_profile/Default/
-/chrome_profile/ShaderCache/
-/chrome_profile/GrShaderCache/
-/chrome_profile/GraphiteDawnCache/
-/chrome_profile/Code Cache/
-/chrome_profile/GPUCache/
-/chrome_profile/Crashpad/
-/chrome_profile/ComponentUpdater/
-/chrome_profile/BrowserMetrics/
-/chrome_profile/CertificateRevocation/
+/chrome_bin
+/cookies_profile/storage_state.json
+/cookies_profile/Singleton*
+/cookies_profile/Default/
+/cookies_profile/ShaderCache/
+/cookies_profile/GrShaderCache/
+/cookies_profile/GraphiteDawnCache/
+/cookies_profile/Code Cache/
+/cookies_profile/GPUCache/
+/cookies_profile/Crashpad/
+/cookies_profile/ComponentUpdater/
+/cookies_profile/BrowserMetrics/
+/cookies_profile/CertificateRevocation/
 /playwright-report/
 /test-results/
 /*.mp4

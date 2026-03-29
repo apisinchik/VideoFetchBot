@@ -152,6 +152,40 @@ class VideoServiceExtractionMixin:
         if js_runtimes:
             opts["js_runtimes"] = js_runtimes
 
+        extractor_args_env = (
+            os.getenv("VIDEOFETCHER_YTDLP_EXTRACTOR_ARGS")
+            or os.getenv("YTDLP_EXTRACTOR_ARGS")
+            or ""
+        ).strip()
+        if extractor_args_env:
+            extractor_args: Dict[str, Dict[str, List[str]]] = {}
+            for ie_spec in extractor_args_env.split("|"):
+                item = ie_spec.strip()
+                if not item or ":" not in item:
+                    continue
+                ie_key, raw_args = item.split(":", 1)
+                ie_key = ie_key.strip().lower()
+                if not ie_key:
+                    continue
+                parsed_args: Dict[str, List[str]] = {}
+                for arg in raw_args.split(";"):
+                    arg_item = arg.strip()
+                    if not arg_item:
+                        continue
+                    if "=" in arg_item:
+                        arg_key, arg_vals = arg_item.split("=", 1)
+                        values = [val.replace(r'\,', ',').strip() for val in re.split(r'(?<!\\),', arg_vals)]
+                    else:
+                        arg_key = arg_item
+                        values = []
+                    arg_key = arg_key.strip().lower().replace("-", "_")
+                    if arg_key:
+                        parsed_args[arg_key] = values
+                if parsed_args:
+                    extractor_args[ie_key] = parsed_args
+            if extractor_args:
+                opts["extractor_args"] = extractor_args
+
     def _load_cookies_manager(self):
         if self._cookies_manager or self._cookies_manager_failed:
             return self._cookies_manager

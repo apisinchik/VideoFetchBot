@@ -1,0 +1,205 @@
+services:
+  plugin:
+    image: brainicism/bgutil-ytdlp-pot-provider:node
+    restart: unless-stopped
+  telegram-bot-api:
+    image: aiogram/telegram-bot-api:latest
+    environment:
+      TELEGRAM_API_ID: "${TELEGRAM_API_ID}"
+      TELEGRAM_API_HASH: "${TELEGRAM_API_HASH}"
+      TELEGRAM_LOCAL: "1"
+      TELEGRAM_STAT: "1"
+    volumes:
+      - ./data/telegram-bot-api:/var/lib/telegram-bot-api
+    ports:
+      - "127.0.0.1:8081:8081"
+      - "127.0.0.1:8082:8082"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8082"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: videofetch
+      POSTGRES_USER: videofetch
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  db-init:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pybase
+      target: vfsite
+    restart: "no"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DSN: "postgresql://videofetch:${POSTGRES_PASSWORD}@db/videofetch"
+      TELEGRAM_API_BASE_URL: "http://telegram-bot-api:8081"
+      TEMP_DIR: "/app/temp"
+      VIDEOFETCHER_TEMP_DIR: "/app/temp"
+      MEDIA_ROOT: "/app/media"
+      DJANGO_STATIC_ROOT: "/app/staticfiles"
+    command: ["/bin/sh", "/app/docker/bootstrap-db.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  bot:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pybase
+      target: bot
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DSN: "postgresql://videofetch:${POSTGRES_PASSWORD}@db:5432/videofetch"
+      TELEGRAM_API_BASE_URL: "http://telegram-bot-api:8081"
+      TEMP_DIR: "/app/temp"
+      VIDEOFETCHER_TEMP_DIR: "/app/temp"
+      BROWSER_PROFILE_DIR: "/data/chrome_profile"
+      VIDEOFETCHER_COOKIES_STORAGE_STATE: "/data/chrome_profile/storage_state.json"
+      VIDEOFETCHER_COOKIES_CHANNEL: ""
+      VIDEOFETCHER_COOKIES_HEADLESS: "1"
+      VIDEOFETCHER_YTDLP_JS_RUNTIMES: "node"
+      VIDEOFETCHER_YTDLP_EXTRACTOR_ARGS: "youtubepot-bgutilhttp:base_url=http://plugin:4416"
+    volumes:
+      - shared_temp:/app/temp
+      - ./cookies_profile:/data/chrome_profile
+      - media_data:/app/media
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      telegram-bot-api:
+        condition: service_healthy
+      plugin:
+        condition: service_started
+
+  vfsite:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pybase
+      target: vfsite
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DSN: "postgresql://videofetch:${POSTGRES_PASSWORD}@db/videofetch"
+      TELEGRAM_API_BASE_URL: "http://telegram-bot-api:8081"
+      MEDIA_ROOT: "/app/media"
+      DJANGO_STATIC_ROOT: "/app/staticfiles"
+      DJANGO_USE_HTTPS: "${DJANGO_USE_HTTPS:-0}"
+      TEMP_DIR: "/app/temp"
+      VIDEOFETCHER_TEMP_DIR: "/app/temp"
+      BROWSER_PROFILE_DIR: "/data/chrome_profile"
+      VIDEOFETCHER_COOKIES_STORAGE_STATE: "/data/chrome_profile/storage_state.json"
+      VIDEOFETCHER_COOKIES_CHANNEL: ""
+      VIDEOFETCHER_COOKIES_HEADLESS: "1"
+      DJANGO_ALLOWED_HOSTS: "${DJANGO_ALLOWED_HOSTS:-127.0.0.1,localhost,testserver}"
+      DJANGO_CSRF_TRUSTED_ORIGINS: "${DJANGO_CSRF_TRUSTED_ORIGINS:-http://127.0.0.1,http://localhost}"
+      VIDEOFETCHER_YTDLP_JS_RUNTIMES: "node"
+      VIDEOFETCHER_YTDLP_EXTRACTOR_ARGS: "youtubepot-bgutilhttp:base_url=http://plugin:4416"
+    volumes:
+      - shared_temp:/app/temp
+      - ./cookies_profile:/data/chrome_profile
+      - static_data:/app/staticfiles
+      - media_data:/app/media
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      telegram-bot-api:
+        condition: service_healthy
+      plugin:
+        condition: service_started
+  
+  cleanup:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pybase
+      target: vfsite
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DSN: "postgresql://videofetch:${POSTGRES_PASSWORD}@db:5432/videofetch"
+      TELEGRAM_API_BASE_URL: "http://telegram-bot-api:8081"
+      MEDIA_ROOT: "/app/media"
+      DJANGO_STATIC_ROOT: "/app/staticfiles"
+      DJANGO_USE_HTTPS: "${DJANGO_USE_HTTPS:-0}"
+      TEMP_DIR: "/app/temp"
+      VIDEOFETCHER_TEMP_DIR: "/app/temp"
+      BROWSER_PROFILE_DIR: "/data/chrome_profile"
+      VIDEOFETCHER_COOKIES_STORAGE_STATE: "/data/chrome_profile/storage_state.json"
+      VIDEOFETCHER_COOKIES_CHANNEL: ""
+      VIDEOFETCHER_COOKIES_HEADLESS: "1"
+      DJANGO_ALLOWED_HOSTS: "${DJANGO_ALLOWED_HOSTS:-127.0.0.1,localhost,testserver}"
+      DJANGO_CSRF_TRUSTED_ORIGINS: "${DJANGO_CSRF_TRUSTED_ORIGINS:-http://127.0.0.1,http://localhost}"
+      VIDEOFETCHER_YTDLP_JS_RUNTIMES: "node"
+      VIDEOFETCHER_YTDLP_EXTRACTOR_ARGS: "youtubepot-bgutilhttp:base_url=http://plugin:4416"
+      CLEANUP_INTERVAL_SECONDS: "${CLEANUP_INTERVAL_SECONDS:-900}"
+      CLEANUP_WEB_JOB_MAX_AGE_HOURS: "${CLEANUP_WEB_JOB_MAX_AGE_HOURS:-24}"
+      CLEANUP_COMPLETED_BROADCAST_MAX_AGE_HOURS: "${CLEANUP_COMPLETED_BROADCAST_MAX_AGE_HOURS:-1}"
+      CLEANUP_MEDIA_MIN_AGE_MINUTES: "${CLEANUP_MEDIA_MIN_AGE_MINUTES:-30}"
+      CLEANUP_MIN_FREE_MB: "${CLEANUP_MIN_FREE_MB:-1024}"
+    command: ["/bin/sh", "/app/docker/cleanup-loop.sh"]
+    volumes:
+      - shared_temp:/app/temp
+      - ./cookies_profile:/data/chrome_profile
+      - media_data:/app/media
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - vfsite
+    environment:
+      NGINX_SERVER_NAME: "${NGINX_SERVER_NAME:-localhost}"
+      NGINX_PRIMARY_DOMAIN: "${NGINX_PRIMARY_DOMAIN:-localhost}"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates:ro
+      - ./docker/nginx-entrypoint.sh:/docker-entrypoint.d/99-videofetch-template.sh:ro
+      - certbot_www:/var/www/certbot
+      - letsencrypt:/etc/letsencrypt
+      - static_data:/var/www/static:ro
+      - media_data:/var/www/media:ro
+
+  certbot:
+    image: certbot/certbot:latest
+    profiles: ["ops"]
+    volumes:
+      - certbot_www:/var/www/certbot
+      - letsencrypt:/etc/letsencrypt
+
+
+volumes:
+  pgdata:
+  shared_temp:
+  static_data:
+  media_data:
+  certbot_www:
+  letsencrypt:
+
+networks:
+  default:
+    name: videofetchbot_default
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24

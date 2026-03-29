@@ -1,0 +1,17 @@
+gitignore
+.git
+.gitignore
+.idea
+.venv
+__pycache__
+*.pyc
+.env
+chrome_profile
+cookies_profile
+data
+media
+temp
+site/temp
+downloads
+temp_segments
+bot/temp

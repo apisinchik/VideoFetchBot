@@ -25,12 +25,26 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "DJANGO_CSRF_TRUSTED_ORIGINS",
+        "http://127.0.0.1,http://localhost",
+    ).split(",")
+    if origin.strip()
+]
+
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 REFERRER_POLICY = "same-origin"
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+DJANGO_USE_HTTPS = os.getenv("DJANGO_USE_HTTPS", "0") in ("1", "true", "True")
+SESSION_COOKIE_SECURE = DJANGO_USE_HTTPS
+CSRF_COOKIE_SECURE = DJANGO_USE_HTTPS
 
 
 
@@ -135,7 +149,8 @@ USE_TZ = True
 
 
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.getenv("DJANGO_STATIC_ROOT", str(PROJECT_ROOT / "staticfiles"))
 MEDIA_URL = '/media/'
 MEDIA_ROOT = Config.MEDIA_ROOT
 
