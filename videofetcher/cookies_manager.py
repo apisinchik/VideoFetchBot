@@ -57,7 +57,6 @@ class CookiesManager:
                 launch_args = [
                     "--disable-blink-features=AutomationControlled",
                     "--disable-dev-shm-usage",
-                    "--disable-web-security",
                     "--start-maximized",
                 ]
                 if self.no_sandbox:
@@ -69,7 +68,6 @@ class CookiesManager:
                         "(KHTML, like Gecko) Chrome/138.0.0.0 YaBrowser/25.8.0.0 Safari/537.36"
                     ),
                     "no_viewport": True,
-                    "ignore_https_errors": True,
                 }
                 if self.proxy_url:
                     context_options["proxy"] = {"server": self.proxy_url}

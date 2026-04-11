@@ -99,7 +99,7 @@ class HLSVideoDownloader:
             try:
                 from aiohttp_socks import ProxyConnector  # type: ignore
 
-                connector = ProxyConnector.from_url(proxy, rdns=True, ssl=False, limit=10)
+                connector = ProxyConnector.from_url(proxy, rdns=True, limit=10)
                 self.session = aiohttp.ClientSession(connector=connector, timeout=timeout)
                 self._use_proxy_param = False
                 logger.info(f"Using SOCKS proxy for aiohttp (rdns): {proxy}")
@@ -110,7 +110,7 @@ class HLSVideoDownloader:
                     "Tip: try `pip install -U aiohttp-socks setuptools`."
                 )
 
-        connector = aiohttp.TCPConnector(ssl=False, limit=10)
+        connector = aiohttp.TCPConnector(limit=10)
         self.session = aiohttp.ClientSession(connector=connector, timeout=timeout)
         self._use_proxy_param = bool(proxy and proxy.lower().startswith(('http://', 'https://')))
         return self
@@ -202,7 +202,7 @@ class HLSVideoDownloader:
                     async with self.session.get(
                             url,
                             headers=headers,
-                            ssl=False,
+                            ssl=None,
                             proxy=(self.proxy_url if self._use_proxy_param else None)
                     ) as response:
 
@@ -274,7 +274,7 @@ class HLSVideoDownloader:
                     async with self.session.get(
                             url,
                             headers=headers,
-                            ssl=False,
+                            ssl=None,
                             proxy=(self.proxy_url if self._use_proxy_param else None)
                     ) as response:
                         if response.status in [200, 206]:
@@ -545,7 +545,7 @@ class HLSVideoDownloader:
                     async with self.session.get(
                             url,
                             headers=headers,
-                            ssl=False,
+                            ssl=None,
                             proxy=(self.proxy_url if self._use_proxy_param else None)
                     ) as response:
 

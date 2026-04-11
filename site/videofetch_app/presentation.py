@@ -363,7 +363,7 @@ def _public_error_message(job) -> Optional[str]:
     if "youtube_auth_required" in lowered or ("sign in to confirm" in lowered and "not a bot" in lowered):
         return "YouTube запросил авторизацию или подтверждение." 
     if "failed to download hls stream" in lowered:
-        return "Не удалось скачать HLS-поток." 
+        return "Не удалось скачать поток." 
     if "download_video returned empty path" in lowered:
         return "Сервер не сохранил итоговый файл." 
     return "Не удалось обработать загрузку. Попробуйте снова позже."

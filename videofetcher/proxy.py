@@ -27,16 +27,16 @@ class ProxyChecker:
                 except Exception as e:
                     return False, f"aiohttp-socks not available for SOCKS proxy: {e}"
 
-                connector = ProxyConnector.from_url(proxy, rdns=True, ssl=False, limit=10)
+                connector = ProxyConnector.from_url(proxy, rdns=True, limit=10)
                 async with aiohttp.ClientSession(connector=connector, timeout=self.timeout) as session:
-                    async with session.get("https://www.youtube.com/", ssl=False) as response:
+                    async with session.get("https://www.youtube.com/") as response:
                         if response.status == 200:
                             return True, "Proxy is working"
                         return False, f"Proxy returned status {response.status}"
 
-            connector = aiohttp.TCPConnector(ssl=False)
+            connector = aiohttp.TCPConnector()
             async with aiohttp.ClientSession(connector=connector, timeout=self.timeout) as session:
-                async with session.get("https://www.youtube.com/", proxy=proxy, ssl=False) as response:
+                async with session.get("https://www.youtube.com/", proxy=proxy) as response:
                     if response.status == 200:
                         return True, "Proxy is working"
                     return False, f"Proxy returned status {response.status}"
@@ -48,9 +48,9 @@ class ProxyChecker:
     async def test_direct_connection(self) -> bool:
         """Проверяет прямое соединение без прокси."""
         try:
-            connector = aiohttp.TCPConnector(ssl=False)
+            connector = aiohttp.TCPConnector()
             async with aiohttp.ClientSession(connector=connector, timeout=self.timeout) as session:
-                async with session.get("https://www.google.com/", ssl=False) as response:
+                async with session.get("https://www.google.com/") as response:
                     return response.status == 200
         except Exception:
             return False

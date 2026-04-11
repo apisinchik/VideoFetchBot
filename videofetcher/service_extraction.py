@@ -47,8 +47,6 @@ class VideoServiceExtractionMixin:
             'fragment_retries': self.settings.max_retries,
             'ignoreerrors': False,
             'noplaylist': True,
-            'no_check_certificate': True,
-            'prefer_insecure': True,
             'http_headers': self._build_ydl_http_headers(),
         })
 
@@ -413,7 +411,7 @@ class VideoServiceExtractionMixin:
 
             timeout = aiohttp.ClientTimeout(total=30)
             async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.get(url, headers=headers, ssl=False, proxy=proxy) as resp:
+                async with session.get(url, headers=headers, proxy=proxy) as resp:
                     if resp.status != 200:
                         logger.warning(f"Embed page returned HTTP {resp.status}")
                         return await self._extract_with_ytdlp(url, use_proxy=use_proxy)
@@ -514,14 +512,14 @@ class VideoServiceExtractionMixin:
                 logger.info("Using direct connection for Playwright")
 
             async with async_playwright() as p:
+                headless = os.getenv("VIDEOFETCHER_PLAYWRIGHT_HEADLESS", "1") in ("1", "true", "True")
                 browser = await p.chromium.launch(
-                    headless=False,
+                    headless=headless,
                     args=[
                         '--disable-blink-features=AutomationControlled',
                         '--disable-dev-shm-usage',
                         '--no-sandbox',
                         '--disable-setuid-sandbox',
-                        '--disable-web-security',
                     ]
                 )
 
@@ -529,7 +527,6 @@ class VideoServiceExtractionMixin:
                     context_options = {
                         'user_agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 YaBrowser/25.8.0.0 Safari/537.36',
                         'viewport': {'width': 1920, 'height': 1080},
-                        'ignore_https_errors': True,
                     }
 
                     if proxy_url:
