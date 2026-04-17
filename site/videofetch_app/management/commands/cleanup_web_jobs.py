@@ -20,7 +20,7 @@ from videofetch_app.cleanup import (
     resolve_project_path,
     resolve_storage_relative_path,
 )
-from videofetch_app.models import Broadcast, BroadcastAttachment, Job, TelegramAccount, User
+from videofetch_app.models import Broadcast, BroadcastAttachment, BroadcastDelivery, Job, TelegramAccount, User
 
 
 class Command(BaseCommand):
@@ -28,7 +28,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--job-max-age-hours", type=int, default=int(os.getenv("CLEANUP_WEB_JOB_MAX_AGE_HOURS", "24")))
-        parser.add_argument("--completed-broadcast-max-age-hours", type=int, default=int(os.getenv("CLEANUP_COMPLETED_BROADCAST_MAX_AGE_HOURS", "1")))
+        parser.add_argument("--completed-broadcast-max-age-hours", type=int, default=int(os.getenv("CLEANUP_COMPLETED_BROADCAST_MAX_AGE_HOURS", "24")))
         parser.add_argument("--min-media-age-minutes", type=int, default=int(os.getenv("CLEANUP_MEDIA_MIN_AGE_MINUTES", "30")))
         parser.add_argument("--min-free-mb", type=int, default=int(os.getenv("CLEANUP_MIN_FREE_MB", "1024")))
         parser.add_argument("--dry-run", action="store_true")
@@ -109,6 +109,12 @@ class Command(BaseCommand):
         )
         reclaimed_bytes += cleaned_broadcast_bytes
 
+        deleted_broadcasts, deleted_broadcast_deliveries = self._cleanup_completed_broadcast_rows(
+            now=now,
+            max_age_hours=options["completed_broadcast_max_age_hours"],
+            dry_run=options["dry_run"],
+        )
+
         reclaimed_files, reclaimed_file_bytes = self._reclaim_oldest_media_files(
             temp_root=temp_root,
             project_root=project_root,
@@ -128,6 +134,8 @@ class Command(BaseCommand):
                 f"deleted_web_users={deleted_web_users} "
                 f"cleaned_broadcast_attachments={cleaned_broadcast_attachments} "
                 f"deleted_broadcast_files={deleted_broadcast_files} "
+                f"deleted_broadcasts={deleted_broadcasts} "
+                f"deleted_broadcast_deliveries={deleted_broadcast_deliveries} "
                 f"reclaimed_oldest_files={reclaimed_files} "
                 f"reclaimed_bytes={reclaimed_bytes}"
             )
@@ -210,6 +218,34 @@ class Command(BaseCommand):
             BroadcastAttachment.objects.filter(id__in=attachment_ids_to_clear).update(file="")
 
         return len(attachment_ids_to_clear), len(deleted_paths), reclaimed_bytes
+
+    def _cleanup_completed_broadcast_rows(
+        self,
+        *,
+        now,
+        max_age_hours: int,
+        dry_run: bool,
+    ) -> tuple[int, int]:
+        cutoff = now - timedelta(hours=max_age_hours)
+        broadcast_ids = list(
+            Broadcast.objects.filter(
+                status=Broadcast.Status.COMPLETED,
+                finished_at__isnull=False,
+                finished_at__lte=cutoff,
+            ).values_list("id", flat=True)
+        )
+        if not broadcast_ids:
+            return 0, 0
+
+        deliveries_qs = BroadcastDelivery.objects.filter(broadcast_id__in=broadcast_ids)
+        if dry_run:
+            deleted_deliveries = deliveries_qs.count()
+            deleted_broadcasts = len(broadcast_ids)
+            return deleted_broadcasts, deleted_deliveries
+
+        deleted_deliveries, _ = deliveries_qs.delete()
+        deleted_broadcasts, _ = Broadcast.objects.filter(id__in=broadcast_ids).delete()
+        return deleted_broadcasts, deleted_deliveries
 
     def _reclaim_oldest_media_files(
         self,

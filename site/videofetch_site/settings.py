@@ -2,15 +2,12 @@
 
 import os
 from pathlib import Path
-import sys
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-PROJECT_ROOT = BASE_DIR.parent
-sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import Config
 import environ
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = BASE_DIR.parent
 
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
