@@ -45,48 +45,46 @@ Python, Django, Django REST Framework, PostgreSQL, Docker, Telegram API
 - работа с задачами и статусами (bot/queue_manager.py)
 - Telegram бот (bot)
 ______________________________________________________________
-<img width="217" height="403" alt="image" src="https://github.com/user-attachments/assets/8242881f-96e3-4719-b93c-9e1e3dcb370d" />
-______________________________________________________________
-
 
 ВЕБ-САЙТ
 Главный веб-интерфейс >
-<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-14-18" src="https://github.com/user-attachments/assets/8a17df48-2f80-4c6a-b7b1-97b63ba9eb11" />
+<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-14-18" src="https://github.com/user-attachments/assets/c591c0e4-2590-4186-a0e9-c9faeff92f96" />
 
 Анализ ссылки >
-<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-18-09" src="https://github.com/user-attachments/assets/e02c946b-6511-4aa1-80c9-ba2e544177bd" />
+<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-18-09" src="https://github.com/user-attachments/assets/38290fbb-0202-4579-a06a-e71d71eb89ff" />
 
 Выбор нужного качества >
-<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-18-41" src="https://github.com/user-attachments/assets/9b2f467d-8db2-4bb5-9e7e-e2d882bcb248" />
+<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-18-41" src="https://github.com/user-attachments/assets/f001d3b5-145b-4c46-a82d-2e0aef435623" />
 
 Прогресс >
-<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-18-52" src="https://github.com/user-attachments/assets/e1928cdb-a71a-4747-9a91-cdbbfcbb4082" />
+<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-18-52" src="https://github.com/user-attachments/assets/a0634332-dffb-44f0-9e81-00e1eddb08b0" />
 
 Готовый экран с предложением скачать видео/аудио >
-<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-19-43" src="https://github.com/user-attachments/assets/fd8fb7a6-e1ce-4a4e-8a82-50335702d547" />
+<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-19-43" src="https://github.com/user-attachments/assets/9a837b1c-2e5b-413b-83fd-33fc5882d8d5" />
+<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-22-56" src="https://github.com/user-attachments/assets/0060089c-a1d4-4c92-98e5-64b31d18ea5f" />
 
 Адаптивный интерфейс >
-<img width="389" height="660" alt="Снимок экрана от 2026-04-04 15-24-56" src="https://github.com/user-attachments/assets/70d1a896-87a8-4897-9db8-2f004794e1f1" />
+<img width="389" height="660" alt="Снимок экрана от 2026-04-04 15-24-56" src="https://github.com/user-attachments/assets/a8ecd4c0-7683-4c26-8a67-d8434fa13d6a" />
 ______________________________________________________________
 ТЕЛЕГРАМ БОТ
 Старт > 
-![photo_2026-04-04_20-35-54](https://github.com/user-attachments/assets/6ebcb632-a41d-48dd-87db-f1faabda5ffc)
+<img width="933" height="1280" alt="photo_2026-04-04_20-35-54" src="https://github.com/user-attachments/assets/3982f1a1-82e3-4090-a33a-fb0b83e6f274" />
 
 Выбор качества >
-![photo_2026-04-04_20-35-55](https://github.com/user-attachments/assets/7bb2649c-9e65-4936-8509-a2ce5042cbeb)
+<img width="578" height="1280" alt="photo_2026-04-04_20-35-55" src="https://github.com/user-attachments/assets/e846e153-c52c-4617-af5d-9a2ec00e9119" />
 
 Готовое видео >
-![photo_2026-04-04_20-35-56](https://github.com/user-attachments/assets/a97088ee-c9b6-4b69-b225-84a1b94a2c07)
+<img width="578" height="1280" alt="photo_2026-04-04_20-35-56" src="https://github.com/user-attachments/assets/10e70100-c645-4cf9-98ae-d39c83404cd4" />
 
 Обработка фильма >
-![photo_2026-04-04_20-35-57](https://github.com/user-attachments/assets/5ccc3d39-d2d0-4f17-9f0f-054a3c4b9d25)
+<img width="578" height="1280" alt="photo_2026-04-04_20-35-57" src="https://github.com/user-attachments/assets/cc8df165-f58c-4bf7-b853-7622ff44f07b" />
 
 Выбор озвучки >
-![photo_2026-04-04_20-35-58](https://github.com/user-attachments/assets/6bde039c-4c1c-4b1e-b738-bd70c6ea91d5)
+<img width="578" height="1280" alt="photo_2026-04-04_20-35-58" src="https://github.com/user-attachments/assets/2b1e3761-5865-4d12-8b87-6e61a1e213d4" />
 
 Прогресс >
-![photo_2026-04-04_20-35-59](https://github.com/user-attachments/assets/707f5f27-c26d-43ea-bc8e-0b4b9350eaa4)
+<img width="578" height="1280" alt="photo_2026-04-04_20-35-59" src="https://github.com/user-attachments/assets/6f673521-7df8-4c1d-9ba9-c0839ecc8211" />
 
 Готовое видео (превью нет, особенность телеграма) >
-![photo_2026-04-04_20-36-00](https://github.com/user-attachments/assets/cc8c81b0-272f-4dfa-ab51-5b812aeb81ed)
+<img width="578" height="1280" alt="photo_2026-04-04_20-36-00" src="https://github.com/user-attachments/assets/2498e7d4-858f-4755-8482-7c59c70092ca" />
 
