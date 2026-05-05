@@ -1,4 +1,7 @@
 # VideoFetchBot
+
+English | [Русский](README_RU.md)
+
 This is a backend system with a bot and a website for parsing and downloading videos.
 
 The main problem with systems like this is that downloading and processing videos is a long-running operation. This is bad because if this logic is executed directly inside an HTTP request, the server starts hanging and cannot properly handle other requests.
