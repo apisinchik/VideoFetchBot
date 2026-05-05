@@ -1,90 +1,89 @@
 # VideoFetchBot
-Это backend система бот + сайт с парсингом и скачиванием видео.
+This is a backend system with a bot and a website for parsing and downloading videos.
 
-Основная проблема таких систем в том, что скачивание и обработка видео является долгой операцией. Это плохо, так как если выполнять такую логику прямо в HTTP-запросе, сервер начинает подвисать и не может нормально обрабатывать другие запросы.
+The main problem with systems like this is that downloading and processing videos is a long-running operation. This is bad because if this logic is executed directly inside an HTTP request, the server starts hanging and cannot properly handle other requests.
 
-Чтобы решить эту проблему, в проекте реализована очередь задач, worker процессы, система статусов и повторная обработка задач при ошибках.
+To solve this problem, the project implements a task queue, worker processes, a status system, and task reprocessing on errors.
 
-# Архитектура
+# Architecture
 
-Проект состоит из нескольких частей:
+The project consists of several parts:
 
-- backend приложение
-- Telegram бот
-- worker процессы
+- backend application
+- Telegram bot
+- worker processes
 - PostgreSQL
-- очередь задач
-- система статусов задач
+- task queue
+- task status system
 
-Как правило, backend принимает запрос и ставит задачу в очередь, а worker уже выполняет долгую обработку.
+As a rule, the backend accepts a request and puts a task into the queue, while the worker performs the long-running processing.
 
-# Какие проблемы решены
+# Problems solved
 
-- Долгие операции
-Это плохо, так как скачивание видео может занимать время и блокировать сервер.
-Решением данной проблемы является очередь задач и отдельные worker процессы.
+- Long-running operations
+This is bad because downloading a video can take time and block the server.
+The solution to this problem is a task queue and separate worker processes.
 
-- Дубли задач
-Это может привести к плохим последствиям, например к лишней нагрузке и повторной обработке.
-Решением данной проблемы являются проверки и блокировки.
+- Duplicate tasks
+This can lead to bad consequences, such as extra load and repeated processing.
+The solution to this problem is checks and locks.
 
-- Ошибки при обработке
-Например, сеть может оборваться или сервис может перезапуститься.
-Чтобы решить эту проблему, используются статусы задач и повторная постановка в очередь.
+- Processing errors
+For example, the network can disconnect or the service can restart.
+To solve this problem, task statuses and re-queueing are used.
 
-# Стек
+# Stack
 
 Python, Django, Django REST Framework, PostgreSQL, Docker, Telegram API
 
-# Для HR
+# For HR
 
-Основная логика находится в следующих частях:
+The main logic is located in the following parts:
 
 - backend API (site/videofetch_app/views.py)
-- worker логика (videofetcher/service.py)
-- работа с задачами и статусами (bot/queue_manager.py)
-- Telegram бот (bot)
+- worker logic (videofetcher/service.py)
+- working with tasks and statuses (bot/queue_manager.py)
+- Telegram bot (bot)
 ______________________________________________________________
 
-ВЕБ-САЙТ
-Главный веб-интерфейс >
-<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-14-18" src="https://github.com/user-attachments/assets/c591c0e4-2590-4186-a0e9-c9faeff92f96" />
+WEBSITE
+Main web interface >
+<img width="1365" height="660" alt="Screenshot from 2026-04-04 15-14-18" src="screenshots/web_1.png" />
 
-Анализ ссылки >
-<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-18-09" src="https://github.com/user-attachments/assets/38290fbb-0202-4579-a06a-e71d71eb89ff" />
+Link analysis >
+<img width="1365" height="660" alt="Screenshot from 2026-04-04 15-18-09" src="screenshots/web_2.png" />
 
-Выбор нужного качества >
-<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-18-41" src="https://github.com/user-attachments/assets/f001d3b5-145b-4c46-a82d-2e0aef435623" />
+Choosing the required quality >
+<img width="1365" height="660" alt="Screenshot from 2026-04-04 15-18-41" src="screenshots/web_3.png" />
 
-Прогресс >
-<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-18-52" src="https://github.com/user-attachments/assets/a0634332-dffb-44f0-9e81-00e1eddb08b0" />
+Progress >
+<img width="1365" height="660" alt="Screenshot from 2026-04-04 15-18-52" src="screenshots/web_4.png" />
 
-Готовый экран с предложением скачать видео/аудио >
-<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-19-43" src="https://github.com/user-attachments/assets/9a837b1c-2e5b-413b-83fd-33fc5882d8d5" />
-<img width="1365" height="660" alt="Снимок экрана от 2026-04-04 15-22-56" src="https://github.com/user-attachments/assets/0060089c-a1d4-4c92-98e5-64b31d18ea5f" />
+Final screen with an offer to download video/audio >
+<img width="1365" height="660" alt="Screenshot from 2026-04-04 15-19-43" src="screenshots/web_5.png" />
+<img width="1365" height="660" alt="Screenshot from 2026-04-04 15-22-56" src="screenshots/web_6.png" />
 
-Адаптивный интерфейс >
-<img width="389" height="660" alt="Снимок экрана от 2026-04-04 15-24-56" src="https://github.com/user-attachments/assets/a8ecd4c0-7683-4c26-8a67-d8434fa13d6a" />
+Responsive interface >
+<img width="389" height="660" alt="Screenshot from 2026-04-04 15-24-56" src="screenshots/web_7.png" />
 ______________________________________________________________
-ТЕЛЕГРАМ БОТ
-Старт > 
-<img width="933" height="1280" alt="photo_2026-04-04_20-35-54" src="https://github.com/user-attachments/assets/3982f1a1-82e3-4090-a33a-fb0b83e6f274" />
+TELEGRAM BOT
+Start >
+<img width="933" height="1280" alt="photo_2026-04-04_20-35-54" src="screenshots/tg_1.jpg" />
 
-Выбор качества >
-<img width="578" height="1280" alt="photo_2026-04-04_20-35-55" src="https://github.com/user-attachments/assets/e846e153-c52c-4617-af5d-9a2ec00e9119" />
+Quality selection >
+<img width="578" height="1280" alt="photo_2026-04-04_20-35-55" src="screenshots/tg_2.jpg" />
 
-Готовое видео >
-<img width="578" height="1280" alt="photo_2026-04-04_20-35-56" src="https://github.com/user-attachments/assets/10e70100-c645-4cf9-98ae-d39c83404cd4" />
+Ready video >
+<img width="578" height="1280" alt="photo_2026-04-04_20-35-56" src="screenshots/tg_3.jpg" />
 
-Обработка фильма >
-<img width="578" height="1280" alt="photo_2026-04-04_20-35-57" src="https://github.com/user-attachments/assets/cc8df165-f58c-4bf7-b853-7622ff44f07b" />
+Movie processing >
+<img width="578" height="1280" alt="photo_2026-04-04_20-35-57" src="screenshots/tg_4.jpg" />
 
-Выбор озвучки >
-<img width="578" height="1280" alt="photo_2026-04-04_20-35-58" src="https://github.com/user-attachments/assets/2b1e3761-5865-4d12-8b87-6e61a1e213d4" />
+Voice-over selection >
+<img width="578" height="1280" alt="photo_2026-04-04_20-35-58" src="screenshots/tg_5.jpg" />
 
-Прогресс >
-<img width="578" height="1280" alt="photo_2026-04-04_20-35-59" src="https://github.com/user-attachments/assets/6f673521-7df8-4c1d-9ba9-c0839ecc8211" />
+Progress >
+<img width="578" height="1280" alt="photo_2026-04-04_20-35-59" src="screenshots/tg_6.jpg" />
 
-Готовое видео (превью нет, особенность телеграма) >
-<img width="578" height="1280" alt="photo_2026-04-04_20-36-00" src="https://github.com/user-attachments/assets/2498e7d4-858f-4755-8482-7c59c70092ca" />
-
+Ready video (there is no preview, this is a Telegram feature) >
+<img width="578" height="1280" alt="photo_2026-04-04_20-36-00" src="screenshots/tg_7.jpg" />

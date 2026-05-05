@@ -172,11 +172,14 @@ class VideoServiceDownloadMixin:
                 selected_quality.setdefault('url', master_url)
 
             audio_tracks = format_info.get('audio_tracks') if isinstance(format_info.get('audio_tracks'), list) else []
+            downloader_audio_tracks = audio_tracks or None
             selected_audio = None
             if audio_track and isinstance(audio_track, dict):
                 selected_audio = audio_track
             elif audio_tracks:
                 selected_audio = audio_tracks[0]
+            elif downloader_audio_tracks is None:
+                logger.info("No HLS audio tracks in selected format; downloader will inspect master playlist")
 
             quality_name = selected_quality.get('resolution', 'Unknown')
             audio_name = selected_audio.get('name', 'no') if selected_audio else 'no'
@@ -196,7 +199,7 @@ class VideoServiceDownloadMixin:
                     progress_callback=progress_callback,
                     referer=format_info.get('webpage_url', ''),
                     duration_s=int(format_info.get('duration') or 0),
-                    available_audio_tracks=audio_tracks,
+                    available_audio_tracks=downloader_audio_tracks,
                 )
                 if not success or not os.path.exists(video_only_path):
                     raise Exception("Failed to download video-only HLS stream")
@@ -236,7 +239,7 @@ class VideoServiceDownloadMixin:
                     progress_callback=progress_callback,
                     referer=format_info.get('webpage_url', ''),
                     duration_s=int(format_info.get('duration') or 0),
-                    available_audio_tracks=audio_tracks,
+                    available_audio_tracks=downloader_audio_tracks,
                 )
 
             if success and os.path.exists(output_path):
